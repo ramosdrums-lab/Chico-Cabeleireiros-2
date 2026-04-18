@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.email == "ramosdrums@gmail.com" && request.auth.token.email_verified == true);
+    }
+    
+    function isValidAppointment(data) {
+      return data.keys().hasAll(['date', 'time', 'clientPhone', 'clientName', 'status', 'createdAt']) &&
+             data.date is string && data.date.matches("^\\d{4}-\\d{2}-\\d{2}$") &&
+             data.time is string && data.time.matches("^\\d{2}:\\d{2}$") &&
+             data.clientPhone is string && data.clientPhone.size() >= 9 && data.clientPhone.size() <= 15 &&
+             data.clientName is string && data.clientName.size() > 0 && data.clientName.size() < 100 &&
+             data.status in ['booked', 'cancelled', 'completed', 'pending'] &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidService(data) {
+      return data.keys().hasAll(['name', 'price', 'duration']) &&
+             data.name is string && data.name.size() > 0 &&
+             data.price is number && data.price >= 0 &&
+             data.duration is number && data.duration > 0;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /appointments/{appointmentId} {
+      // Allow reading for everyone to calculate availability
+      // Note: In a high-security environment, we would split public availability from private client data.
+      allow read: if true;
+      
+      // Anyone can create an appointment if it doesn't exist and is valid
+      allow create: if appointmentId == request.resource.data.date + "_" + request.resource.data.time &&
+                       isValidAppointment(request.resource.data) &&
+                       request.resource.data.status == 'pending' &&
+                       !exists(/databases/$(database)/documents/blocked_contacts/$(request.resource.data.clientPhone));
+      
+      // Only admin can update or delete, OR client can cancel if they have the token
+      allow update: if isAdmin() || 
+                       (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'cancelToken']) &&
+                        request.resource.data.status == 'cancelled' &&
+                        resource.data.cancelToken == request.resource.data.cancelToken);
+      
+      allow delete: if isAdmin();
+    }
+
+    match /vacations/{vacationId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /profile/{profileId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /blocked_contacts/{phone} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
+      allow write: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
+    }
+
+    match /clients/{phone} {
+      allow read: if isAdmin();
+      // Allow writing if admin OR if it's a valid client update from a booking
+      allow write: if isAdmin() || 
+                       (request.resource.data.phone == phone && request.resource.data.source == 'booking');
+    }
+  }
+}

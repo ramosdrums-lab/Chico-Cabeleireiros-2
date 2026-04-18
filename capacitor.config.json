@@ -1,0 +1,6 @@
+{
+  "appId": "com.chicocabeleireiros.sergioramos",
+  "appName": "Chico Cabeleireiros",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

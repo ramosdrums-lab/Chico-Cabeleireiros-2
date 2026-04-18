@@ -1,0 +1,164 @@
+{
+  "entities": {
+    "Service": {
+      "title": "Service",
+      "description": "A hair salon service",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "duration": { "type": "number", "description": "Duration in minutes" }
+      },
+      "required": ["name", "price", "duration"]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "A hair salon appointment",
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "The date of the appointment (YYYY-MM-DD)"
+        },
+        "time": {
+          "type": "string",
+          "description": "The time of the appointment (HH:mm)"
+        },
+        "clientPhone": {
+          "type": "string",
+          "description": "The client's phone number"
+        },
+        "clientName": {
+          "type": "string",
+          "description": "The client's name"
+        },
+        "serviceId": {
+          "type": "string",
+          "description": "ID of the selected service"
+        },
+        "serviceName": {
+          "type": "string",
+          "description": "Name of the selected service"
+        },
+        "price": {
+          "type": "number",
+          "description": "The price of the service"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["booked", "cancelled", "completed"],
+          "description": "The status of the appointment"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the appointment was created"
+        },
+        "remindersSent": {
+          "type": "object",
+          "properties": {
+            "client24h": { "type": "boolean" },
+            "professional1h": { "type": "boolean" }
+          }
+        },
+        "cancelToken": {
+          "type": "string",
+          "description": "A secret token to allow the client to cancel/reschedule"
+        }
+      },
+      "required": ["date", "time", "clientPhone", "clientName", "status"]
+    },
+    "Vacation": {
+      "title": "Vacation",
+      "description": "A vacation period for the professional",
+      "type": "object",
+      "properties": {
+        "startDate": { "type": "string", "format": "date" },
+        "endDate": { "type": "string", "format": "date" },
+        "description": { "type": "string" }
+      },
+      "required": ["startDate", "endDate"]
+    },
+    "Profile": {
+      "title": "Profile",
+      "description": "The professional's profile data",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "email": { "type": "string" }
+      },
+      "required": ["name", "email"]
+    },
+    "BlockedContact": {
+      "title": "Blocked Contact",
+      "description": "A phone number blocked from making appointments",
+      "type": "object",
+      "properties": {
+        "phone": { "type": "string" },
+        "reason": { "type": "string" },
+        "blockedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["phone", "blockedAt"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "A client in the database",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "source": { "type": "string", "enum": ["import", "manual", "booking"] }
+      },
+      "required": ["name", "phone"]
+    },
+    "User": {
+      "title": "User",
+      "description": "A client's profile data",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "uid": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "phone", "uid"]
+    }
+  },
+  "firestore": {
+    "/appointments/{appointmentId}": {
+      "schema": "Appointment",
+      "description": "Collection of all appointments"
+    },
+    "/services/{serviceId}": {
+      "schema": "Service",
+      "description": "Collection of all services"
+    },
+    "/vacations/{vacationId}": {
+      "schema": "Vacation",
+      "description": "Collection of vacation periods"
+    },
+    "/profile/{profileId}": {
+      "schema": "Profile",
+      "description": "Professional profile data"
+    },
+    "/blocked_contacts/{phone}": {
+      "schema": "BlockedContact",
+      "description": "Collection of blocked phone numbers"
+    },
+    "/clients/{phone}": {
+      "schema": "Client",
+      "description": "Collection of all clients"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Client profile data"
+    }
+  }
+}

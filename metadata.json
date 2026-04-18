@@ -1,0 +1,9 @@
+{
+  "name": "Chico Cabeleireiros - Sérgio Ramos",
+  "description": "Agendamento profissional para Chico Cabeleireiros. Marque o seu corte com o profissional Sérgio Ramos de forma rápida e segura.",
+  "bundleId": "com.chicocabeleireiros.sergioramos",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}
